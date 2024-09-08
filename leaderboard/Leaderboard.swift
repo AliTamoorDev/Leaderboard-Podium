@@ -24,11 +24,11 @@ struct LeaderboardView: View {
     @State private var filteredTopScorers: [TopScorer] = []
     
     @State private var contestants = [
-        Contestant(date: Utils.date(from: "2024-09-07") ?? .now, rank: 8, name: "Leo", userName: "HolidayStar", imageName: "leo", score: Int.random(in: 50...70)),
-        Contestant(date: Utils.date(from: "2024-09-07") ?? .now, rank: 44, name: "Leo2", userName: "HolidayStar", imageName: "leo", score: Int.random(in: 50...70)),
-        Contestant(date: Utils.date(from: "2024-09-07") ?? .now, rank: 11, name: "Leo3", userName: "HolidayStar", imageName: "leo", score: Int.random(in: 50...70)),
+        Contestant(date: Utils.date(from: "2024-09-08") ?? .now, rank: 8, name: "Leo", userName: "HolidayStar", imageName: "leo", score: Int.random(in: 50...70)),
+        Contestant(date: Utils.date(from: "2024-09-08") ?? .now, rank: 44, name: "Leo2", userName: "HolidayStar", imageName: "leo", score: Int.random(in: 50...70)),
+        Contestant(date: Utils.date(from: "2024-09-08") ?? .now, rank: 11, name: "Leo3", userName: "HolidayStar", imageName: "leo", score: Int.random(in: 50...70)),
         Contestant(date: Utils.date(from: "2024-09-01") ?? .now, rank: 4, name: "Mia", userName: "Up North", imageName: "Hanna", score: Int.random(in: 50...70)),
-        Contestant(date: Utils.date(from: "2023-09-01") ?? .now, rank: 5, name: "Mia", userName: "Up North", imageName: "Hanna", score: Int.random(in: 50...70)),
+        Contestant(date: Utils.date(from: "2023-09-08") ?? .now, rank: 5, name: "Mia", userName: "Up North", imageName: "Hanna", score: Int.random(in: 50...70)),
         Contestant(date: Utils.date(from: "2021-09-01") ?? .now, rank: 6, name: "Mia", userName: "Up North", imageName: "Hanna", score: Int.random(in: 50...70)),
         Contestant(date: Utils.date(from: "2024-09-01") ?? .now, rank: 7, name: "Mia", userName: "Up North", imageName: "Hanna", score: Int.random(in: 50...70)),
         
@@ -54,50 +54,44 @@ struct LeaderboardView: View {
                   // Tab Bar
                   TabBar(selectedTitleIndex: $selectedTitleIndex, titles: ["Today", "Month", "All Time"])
                       .padding()
+                  
                   GeometryReader { mainView in
-                      ScrollView(.vertical) {
-                          VStack(spacing: 20) {
-                              
-                              // Podium with GeometryReader
+                      ScrollView {
+                          VStack(spacing: 0) {
                               GeometryReader { geometry in
-                                  HStack(alignment: .bottom, spacing: 0) {
-                                      // Second place
-                                          PodiumView(place: 2, scorer: filteredTopScorers[safe: 1] ?? Utils.dummytopScorer)
-                                      
-                                      // First place
-                                          PodiumView(place: 1, scorer: filteredTopScorers[safe: 0] ?? Utils.dummytopScorer)
-                                      
-                                      // Third place
-                                          PodiumView(place: 3, scorer: filteredTopScorers[safe: 2] ?? Utils.dummytopScorer)
-                                  }
-                                  .task {
-                                      filteredTopScorers = getTopScorer(for: selectedTitleIndex)
-                                  }
-                                  .onChange(of: selectedTitleIndex, { oldValue, newValue in
-                                      filteredTopScorers = getTopScorer(for: newValue)
-                                  })
-                                  .background(
-                                    GeometryReader { geoOver in
-                                        Color.clear.task {
-                                            orgHeight = geoOver.size.height
-                                            podiumHeight = orgHeight
-                                        }
-                                    }
-                                    
-                                  )
-                                  .padding(.vertical)
-//                                  .scaleEffect(getScaleEffect(from: geometry.frame(in: .global).minY))
-                                  .scaleEffect(getScaleEffect2(mainFrame: mainView.frame(in: .global).minY ,from: geometry.frame(in: .global).minY))
                                   
-                                  .onAppear {
-                                      self.scrollOffset = geometry.frame(in: .global).minY
-                                  }
+                                  PodiumContainerView(topScorers: $filteredTopScorers)
+                                      .frame(width: mainView.size.width, height: mainView.size.height)
+                                      .task {
+                                          filteredTopScorers = getTopScorer(for: selectedTitleIndex)
+                                      }
+                                      .onChange(of: selectedTitleIndex, { oldValue, newValue in
+                                          filteredTopScorers = getTopScorer(for: newValue)
+                                      })
+                                      .background(
+                                        GeometryReader { geoOver in
+                                            Color.clear.task {
+                                                orgHeight = geoOver.size.height
+                                                podiumHeight = orgHeight
+                                            }
+                                        }
+                                        
+                                      )
+                                      .padding(.vertical)
+    //                                  .scaleEffect(getScaleEffect(from: geometry.frame(in: .global).minY))
+                                      .scaleEffect(getScaleEffect2(mainFrame: mainView.frame(in: .global).minY ,from: geometry.frame(in: .global).minY))
+                                      
+                                      .onAppear {
+                                          self.scrollOffset = geometry.frame(in: .global).minY
+                                      }
+                                  
                               }
                               .frame(height: podiumHeight)
+
                               
                               ContestantView(selectedPeriod: $selectedTitleIndex, contestants: $contestants)
                                   .padding(.top, 10) // Add some padding to separate from the podium
-                                  .offset(x: 0, y:-50)
+                                  .offset(x: 0, y:-180)
                               Spacer()
                           }
                       }
@@ -106,6 +100,7 @@ struct LeaderboardView: View {
                           
                       }
                   }
+                  .ignoresSafeArea(.all, edges: .bottom)
               }
           }
       }
@@ -198,8 +193,10 @@ struct ContestantView: View {
 
         VStack(alignment: .leading) {
             
-            customTriangle()
-                .foregroundColor(.white.opacity(0.9))
+            if !getContestants(for: selectedPeriod).isEmpty {
+                customTriangle()
+                    .foregroundColor(.white.opacity(0.9))
+            }
             
             ForEach(getContestants(for: selectedPeriod)) { contestant in
                 HStack(spacing:0) {
@@ -267,12 +264,20 @@ struct ContestantView: View {
 }
 
 struct customTriangle: Shape {
+    
     func path(in rect: CGRect) -> Path {
-        Path { path in
-            path.move(to: CGPoint(x: rect.minX, y: rect.minY-30))
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-            path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-            path.closeSubpath()
-        }
+        var path = Path()
+        
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY-10))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY-40))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY-10))
+        
+        path.closeSubpath()
+        
+        return path
     }
+}
+
+#Preview {
+    customTriangle()
 }

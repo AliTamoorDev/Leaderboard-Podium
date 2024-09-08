@@ -36,18 +36,20 @@ struct PodiumView: View {
                             .shadow(radius: 4)
                     }
                 }
+                .padding(.trailing, place == 2 ? 40 : 0)
+
             
             // Name
             Text(scorer.name)
                 .font(.subheadline)
                 .foregroundColor(.black)
                 .padding(.bottom)
-            
+                .padding(.trailing, place == 2 ? 40 : 0)
             // Podium Block with custom shape
             ZStack {
                 PodiumShape(place: place)
-                    .fill(Color.white.opacity(0.9))
-                    .frame(height: podiumHeight(for: place))
+                    .fill(Color.white)
+//                    .frame(height: podiumHeight(for: place))
                     .shadow(radius: 5)
                 
                 Text("\(place)")
@@ -73,17 +75,16 @@ struct PodiumView: View {
                         .font(.system(size: 16, weight: .bold))
                 }
                 .padding(.top,10)
-                .padding(.leading, podiumPadding(for: place))
+                .padding(.leading, podiumRankPadding(for: place))
             }
         }
-        .frame(maxWidth: .infinity)
     }
     
     func podiumHeight(for place: Int) -> CGFloat {
         switch place {
-        case 1: return 320
-        case 2: return 260
-        case 3: return 225
+        case 1: return 500
+        case 2: return 400
+        case 3: return 400
         default: return 100
         }
     }
@@ -91,8 +92,17 @@ struct PodiumView: View {
     func podiumPadding(for place: Int) -> CGFloat {
         switch place {
         case 1: return 0
-        case 2: return 35
-        case 3: return -40
+        case 2: return 20
+        case 3: return -50
+        default: return 0
+        }
+    }
+    
+    func podiumRankPadding(for place: Int) -> CGFloat {
+        switch place {
+        case 1: return 0
+        case 2: return -20
+        case 3: return -10
         default: return 0
         }
     }
@@ -114,15 +124,15 @@ struct PodiumShape: Shape {
             path.addLine(to: CGPoint(x: rect.minX + 20, y: rect.maxY))
         case 2:
             // Left block
-            path.move(to: CGPoint(x: rect.minX + 20, y: rect.minY+10))
-            path.addLine(to: CGPoint(x: rect.maxX+10, y: rect.minY))
+            path.move(to: CGPoint(x: rect.minX + 10, y: rect.minY+10))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
             path.addLine(to: CGPoint(x: rect.maxX + 20, y: rect.maxY))
-            path.addLine(to: CGPoint(x: rect.midX-10, y: rect.maxY-15))
+            path.addLine(to: CGPoint(x: rect.midX-0, y: rect.maxY-15))
         case 3:
             // Right block
             path.move(to: CGPoint(x: rect.minX-5, y: rect.minY))
-            path.addLine(to: CGPoint(x: rect.midX + 30, y: rect.minY+10))
-            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY-20))
+            path.addLine(to: CGPoint(x: rect.midX + 50, y: rect.minY+10))
+            path.addLine(to: CGPoint(x: rect.midX-20, y: rect.maxY-20))
             path.addLine(to: CGPoint(x: rect.minX-20, y: rect.maxY))
         default:
             break
@@ -135,4 +145,43 @@ struct PodiumShape: Shape {
 
 #Preview {
     PodiumView(place: 1, scorer: TopScorer(date: Utils.date(from: "2024-09-01") ?? .now, name: "Leo DiCaprio", score: 89, image: "leo"))
+}
+
+
+struct PodiumContainerView: View {
+    
+    @Binding var topScorers: [TopScorer]
+    
+    var body: some View {
+        
+        GeometryReader { geo in
+            ZStack(alignment: .bottom) {
+                PodiumView(place: 2, scorer: topScorers[safe: 1] ?? Utils.dummytopScorer)
+                    .frame(width: 160, height: geo.size.height * 0.88)
+                    .offset(x: -100, y: 0)
+                
+                
+                PodiumView(place: 3, scorer: topScorers[safe: 2] ?? Utils.dummytopScorer)
+                    .frame(width: 160, height: geo.size.height * 0.82)
+                    .offset(x: 120, y: 0)
+                
+                PodiumView(place: 1, scorer: topScorers[safe: 0] ?? Utils.dummytopScorer)
+                    .frame(width: 120)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .ignoresSafeArea(.all, edges: .bottom)
+    }
+}
+
+#Preview {
+    @State var topScorers: [TopScorer] = [
+        TopScorer(date: Utils.date(from: "2024-09-07") ?? .now, name: "Leo DiCaprio", score: 89, image: "leo"),
+        TopScorer(date: Utils.date(from: "2024-09-02") ?? .now, name: "King of Spain", score: 91, image: "douglas"),
+        TopScorer(date: Utils.date(from: "2024-09-01") ?? .now, name: "Leo DiCaprio", score: 85, image: "leo"),
+        TopScorer(date: Utils.date(from: "2024-09-01") ?? .now, name: "Frencha D.", score: 79, image: "douglas"),
+        TopScorer(date: Utils.date(from: "2024-09-01") ?? .now, name: "Hanna F.", score: 88, image: "Hanna")
+    ]
+    
+    return PodiumContainerView(topScorers: $topScorers)
 }
