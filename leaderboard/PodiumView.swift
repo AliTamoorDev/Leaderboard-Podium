@@ -34,6 +34,7 @@ struct PodiumView: View {
                             .foregroundColor(.yellow)
                             .padding(-10)
                             .shadow(radius: 4)
+                            .rotationEffect(.degrees(30))
                     }
                 }
                 .padding(.trailing, place == 2 ? 40 : 0)
@@ -46,17 +47,19 @@ struct PodiumView: View {
                 .padding(.bottom)
                 .padding(.trailing, place == 2 ? 40 : 0)
             // Podium Block with custom shape
-            ZStack {
+            ZStack(alignment: .top) {
                 PodiumShape(place: place)
                     .fill(Color.white)
 //                    .frame(height: podiumHeight(for: place))
                     .shadow(radius: 5)
                 
                 Text("\(place)")
-                    .font(.system(size: 56, weight: .heavy))
-                    .foregroundColor(.orange)
+                    .font(.system(size: getPodiumFontSize(for: place), weight: .heavy))
+                    .foregroundColor(.orange.opacity(0.8))
                     .padding(.leading, podiumPadding(for: place))
                     .shadow(radius: 2)
+                    .offset(x:0, y:place == 1 ? 40 : 70)
+                    .rotationEffect(.degrees(getRotationAngle(for: place)))
 
             }
             .overlay(alignment: .top) {
@@ -74,7 +77,7 @@ struct PodiumView: View {
                         .foregroundColor(.orange)
                         .font(.system(size: 16, weight: .bold))
                 }
-                .padding(.top,10)
+                .padding(.top,place == 1 ? 2 : 10)
                 .padding(.leading, podiumRankPadding(for: place))
             }
         }
@@ -92,8 +95,8 @@ struct PodiumView: View {
     func podiumPadding(for place: Int) -> CGFloat {
         switch place {
         case 1: return 0
-        case 2: return 20
-        case 3: return -50
+        case 2: return 02
+        case 3: return -40
         default: return 0
         }
     }
@@ -103,6 +106,24 @@ struct PodiumView: View {
         case 1: return 0
         case 2: return -20
         case 3: return -10
+        default: return 0
+        }
+    }
+    
+    func getPodiumFontSize(for place: Int) -> CGFloat {
+        switch place {
+        case 1: return 168
+        case 2: return 115
+        case 3: return 80
+        default: return 80
+        }
+    }
+    
+    func getRotationAngle(for place: Int) -> CGFloat {
+        switch place {
+        case 1: return 0
+        case 2: return -3
+        case 3: return 5
         default: return 0
         }
     }
