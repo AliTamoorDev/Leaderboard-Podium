@@ -1,0 +1,1 @@
+Podium widget in swiftUI - iOS that can show rankings, progress bars, or any other relevant information, with personalized styles and interactions. It can be fully customized to fit the app’s theme and user preferences, offering a seamless experience that integrates with the overall app functionality.
